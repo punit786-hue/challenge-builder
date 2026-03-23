@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a26; --surface3: #22223a;
+    --accent: #ff4d6d; --accent2: #f8b400; --accent3: #00d4aa; --accent4: #7c5cbf;
+    --text: #e8e8f0; --muted: #6b6b8a; --border: rgba(255,255,255,0.08);
+  }
+  body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+  .app { max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
+  .header { padding: 20px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+  .logo span { -webkit-text-fill-color: var(--accent3); }
+  .stats-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .stat-pill { background: var(--surface2); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px; font-size: 13px; color: var(--muted); }
+  .stat-pill b { color: var(--text); }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px; }
+  .tab { flex: 1; padding: 9px 10px; border: none; background: transparent; color: var(--muted); font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; position: relative; }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { background: var(--accent); color: white; }
+  .tab.active.t2 { background: var(--accent2); color: #111; }
+  .tab.active.t3 { background: var(--accent3); color: #111; }
+  .tab.active.t4 { background: var(--accent4); color: white; }
+  .tab-badge { position: absolute; top: 4px; right: 4px; background: var(--accent); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .panel { display: none; } .panel.active { display: block; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .tabs { flex-wrap: wrap; } }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  input, select, textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 15px; outline: none; transition: border 0.2s; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 70px; }
+  .category-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat-pill { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .cat-pill:hover { border-color: var(--accent); color: var(--text); }
+  .cat-pill.selected { background: var(--accent); color: white; border-color: var(--accent); }
+  .cat-pill[data-cat="Fitness"].selected { background: #00d4aa; border-color: #00d4aa; color: #111; }
+  .cat-pill[data-cat="Learning"].selected { background: #7c5cbf; border-color: #7c5cbf; color: white; }
+  .cat-pill[data-cat="Productivity"].selected { background: #f8b400; border-color: #f8b400; color: #111; }
+  .cat-pill[data-cat="Social"].selected { background: #ff4d6d; border-color: #ff4d6d; color: white; }
+  .cat-pill[data-cat="Finance"].selected { background: #4ade80; border-color: #4ade80; color: #111; }
+  .rules-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+  .rules-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .rules-title { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .rule-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .rule-item input { flex: 1; }
+  .del-btn { background: transparent; border: 1px solid var(--border); color: var(--accent); width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .del-btn:hover { background: var(--accent); color: white; }
+  .btn { padding: 11px 22px; border: none; border-radius: 8px; font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; } .btn-primary:hover { opacity: 0.85; }
+  .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 6px; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-outline:hover { border-color: var(--accent3); color: var(--accent3); }
+  .btn-success { background: var(--accent3); color: #111; }
+  .btn-gold { background: var(--accent2); color: #111; }
+  .btn-accept { background: var(--accent4); color: white; border: none; }
+  .btn-accept:hover { opacity: 0.85; }
+  .challenges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+  .challenge-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: all 0.25s; }
+  .challenge-card:hover { border-color: rgba(255,77,109,0.3); transform: translateY(-2px); }
+  .challenge-card.private-card { border-color: rgba(124,92,191,0.4); }
+  .card-top { padding: 14px 16px 12px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .badge-Fitness { background: rgba(0,212,170,0.15); color: #00d4aa; }
+  .badge-Learning { background: rgba(124,92,191,0.2); color: #a07ce0; }
+  .badge-Productivity { background: rgba(248,180,0,0.15); color: #f8b400; }
+  .badge-Social { background: rgba(255,77,109,0.15); color: #ff4d6d; }
+  .badge-Finance { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .badge-Other { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .badge-private { background: rgba(124,92,191,0.2); color: #a07ce0; }
+  .card-body { padding: 12px 16px; }
+  .card-desc { color: var(--muted); font-size: 14px; margin-bottom: 10px; line-height: 1.5; }
+  .progress-area { margin-bottom: 10px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .progress-bar { height: 5px; background: var(--surface3); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s; }
+  .card-meta { display: flex; gap: 10px; font-size: 12px; color: var(--muted); margin-bottom: 10px; flex-wrap: wrap; }
+  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rules-list { background: var(--surface2); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+  .rules-list li { font-size: 13px; color: var(--muted); padding: 2px 0 2px 14px; position: relative; list-style: none; }
+  .rules-list li:before { content: '›'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+  .lb-table { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .lb-row { display: grid; grid-template-columns: 48px 1fr 80px 80px 80px; padding: 13px 20px; align-items: center; border-bottom: 1px solid var(--border); gap: 8px; }
+  @media(max-width:600px){ .lb-row { grid-template-columns: 40px 1fr 60px 60px; } .lb-row > div:nth-child(4){display:none;} }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-row:hover { background: var(--surface2); }
+  .lb-row.head { background: var(--surface2); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .rank { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--muted); }
+  .rank.r1 { color: var(--accent2); } .rank.r2 { color: #c0c0c0; } .rank.r3 { color: #cd7f32; }
+  .lb-num { text-align: center; font-weight: 700; font-size: 16px; }
+  .add-participant { background: var(--surface2); border: 1px dashed var(--border); border-radius: 14px; padding: 18px; margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+  @media(max-width:600px){ .add-participant{grid-template-columns:1fr;} }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent); }
+  .close-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 12px 0; }
+  .day-cell { aspect-ratio: 1; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--muted); cursor: pointer; transition: all 0.2s; flex-direction: column; gap: 1px; }
+  .day-cell:hover { border-color: var(--accent3); }
+  .day-cell.done { background: rgba(0,212,170,0.12); border-color: var(--accent3); color: var(--accent3); }
+  .day-cell.missed { background: rgba(255,77,109,0.07); border-color: rgba(255,77,109,0.2); }
+  .notification { position: fixed; top: 20px; right: 20px; background: var(--accent3); color: #111; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; z-index: 999; transform: translateY(-60px); opacity: 0; transition: all 0.3s; }
+  .notification.show { transform: translateY(0); opacity: 1; }
+  .notification.err { background: var(--accent); color: #fff; }
+  .form-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .sec-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--accent); margin-bottom: 16px; }
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .admin-lock-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .admin-lock-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 32px 28px; width: 100%; max-width: 400px; text-align: center; }
+  .admin-badge { background: rgba(255,77,109,0.15); border: 1px solid rgba(255,77,109,0.3); color: var(--accent); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: inline-block; }
+  .guest-badge { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); color: var(--accent3); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: inline-block; }
+  .pending-card { background: var(--surface); border: 1px solid rgba(248,180,0,0.3); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--surface3); border-radius: 24px; cursor: pointer; transition: 0.3s; }
+  .toggle-slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  input:checked + .toggle-slider { background: var(--accent3); }
+  input:checked + .toggle-slider:before { transform: translateX(20px); }
+  .empty-state { text-align: center; padding: 36px 20px; color: var(--muted); }
+  .btn-approve { background: var(--accent3); color: #111; border: none; padding: 7px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: 'Rajdhani',sans-serif; font-size: 13px; }
+  .btn-reject { background: var(--accent); color: white; border: none; padding: 7px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: 'Rajdhani',sans-serif; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="notification" id="notif"></div>
+<div id="modal-area"></div>
+
+<!-- LOCK SCREEN -->
+<div class="admin-lock-overlay" id="lock-overlay">
+  <div class="admin-lock-box">
+    <div style="font-size:44px;margin-bottom:12px;">🔐</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--accent);margin-bottom:6px;">Challenge Builder</div>
+    <div style="color:var(--muted);font-size:14px;margin-bottom:20px;line-height:1.5;">Admin hain? Password enter karein.<br>Participant hain? Join request bhejein.</div>
+    <input type="password" id="admin-pw-input" placeholder="Admin password..." style="text-align:center;letter-spacing:2px;margin-bottom:8px;" onkeydown="if(event.key==='Enter')tryAdminLogin()">
+    <div id="pw-error" style="color:var(--accent);font-size:13px;margin-bottom:8px;display:none;">❌ Galat password!</div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:20px;" onclick="tryAdminLogin()">🔓 Admin Login</button>
+    <div style="border-top:1px solid var(--border);padding-top:18px;">
+      <div class="guest-badge" style="margin-bottom:10px;">Join Request</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Apna naam likhein — Admin approve karega tab andar aao ge</p>
+      <input type="text" id="guest-name-input" placeholder="Apna poora naam likhein..." style="margin-bottom:10px;" onkeydown="if(event.key==='Enter')sendJoinRequest()">
+      <button class="btn btn-outline" style="width:100%;" onclick="sendJoinRequest()">📨 Join Request Bhejo</button>
+    </div>
+  </div>
+</div>
+
+<!-- WAITING SCREEN -->
+<div class="admin-lock-overlay" id="waiting-overlay" style="display:none;">
+  <div class="admin-lock-box">
+    <div style="font-size:48px;margin-bottom:14px;">⏳</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--accent2);margin-bottom:8px;">Request Bheji Gayi!</div>
+    <div style="color:var(--muted);font-size:14px;margin-bottom:6px;">Tumhari request Admin ke paas gayi hai.</div>
+    <div style="color:var(--text);font-size:16px;font-weight:700;margin-bottom:20px;" id="waiting-name"></div>
+    <div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:20px;font-size:13px;color:var(--muted);">Admin approve karne ke baad niche "Check Karo" button dabao!</div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="checkApproval()">🔄 Check Karo — Approved Hua?</button>
+    <button class="btn btn-outline" style="width:100%;font-size:13px;" onclick="cancelRequest()">← Wapas Jao</button>
+  </div>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">Challenge <span>Builder</span></div>
+    <div class="stats-bar">
+      <div class="stat-pill">Challenges: <b id="total-count">0</b></div>
+      <div class="stat-pill">Active: <b id="active-count">0</b></div>
+      <div class="stat-pill">Members: <b id="part-count">0</b></div>
+      <div id="role-badge" onclick="logoutUser()" style="cursor:pointer;" title="Click to switch"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('challenges', this)">📋 Challenges</button>
+    <button class="tab t2" id="create-tab" onclick="showTab('create', this)" style="display:none;">✚ Create</button>
+    <button class="tab t3" onclick="showTab('leaderboard', this)">🏆 Leaderboard</button>
+    <button class="tab t4" id="approval-tab" onclick="showTab('approvals', this)" style="display:none;">✅ Requests</button>
+  </div>
+
+  <!-- CHALLENGES -->
+  <div class="panel active" id="panel-challenges">
+    <div class="filter-bar">
+      <input type="text" id="search-input" placeholder="🔍 Search challenges..." oninput="renderChallenges()">
+      <select id="filter-cat" onchange="renderChallenges()" style="max-width:160px;">
+        <option value="">All Categories</option>
+        <option>Fitness</option><option>Learning</option>
+        <option>Productivity</option><option>Social</option>
+        <option>Finance</option><option>Other</option>
+      </select>
+      <select id="filter-status" onchange="renderChallenges()" style="max-width:140px;">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+    <div class="challenges-grid" id="challenges-list"></div>
+  </div>
+
+  <!-- CREATE -->
+  <div class="panel" id="panel-create">
+    <div class="form-box">
+      <div class="sec-title">New Challenge</div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Challenge Ka Naam</label><input type="text" id="c-name" placeholder="e.g. 30-Day Pushup Challenge"></div>
+        <div class="form-group full"><label>Description</label><textarea id="c-desc" placeholder="Challenge ke baare mein likhein..."></textarea></div>
+        <div class="form-group"><label>Start Date</label><input type="date" id="c-start"></div>
+        <div class="form-group"><label>End Date</label><input type="date" id="c-end"></div>
+        <div class="form-group"><label>Points Per Day</label><input type="number" id="c-points" value="10" min="1" max="1000"></div>
+        <div class="form-group"><label>Difficulty</label>
+          <select id="c-diff"><option>Easy</option><option selected>Medium</option><option>Hard</option><option>Extreme</option></select>
+        </div>
+        <div class="form-group full"><label>Category</label>
+          <div class="category-pills">
+            <div class="cat-pill selected" data-cat="Fitness" onclick="selectCat(this)">💪 Fitness</div>
+            <div class="cat-pill" data-cat="Learning" onclick="selectCat(this)">📚 Learning</div>
+            <div class="cat-pill" data-cat="Productivity" onclick="selectCat(this)">⚡ Productivity</div>
+            <div class="cat-pill" data-cat="Social" onclick="selectCat(this)">🤝 Social</div>
+            <div class="cat-pill" data-cat="Finance" onclick="selectCat(this)">💰 Finance</div>
+            <div class="cat-pill" data-cat="Other" onclick="selectCat(this)">🎯 Other</div>
+          </div>
+        </div>
+        <div class="form-group full">
+          <div class="toggle-row">
+            <span style="font-size:14px;font-weight:600;">🔒 Private Challenge</span>
+            <label class="toggle"><input type="checkbox" id="c-private" onchange="togglePrivateCode()"><span class="toggle-slider"></span></label>
+          </div>
+          <div id="private-code-box" style="display:none;">
+            <input type="text" id="c-access-code" placeholder="Access code likhein (e.g. SQUAD2024)" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;">
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Sirf is code wale log join kar sakenge</div>
+          </div>
+        </div>
+      </div>
+      <div class="rules-section">
+        <div class="rules-header">
+          <div class="rules-title">Challenge Rules</div>
+          <button class="btn btn-sm btn-outline" onclick="addRule()">+ Rule Add Karo</button>
+        </div>
+        <div id="rules-container">
+          <div class="rule-item"><input type="text" placeholder="e.g. Roz 50 pushups karo"><button class="del-btn" onclick="delRule(this)">×</button></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="createChallenge()">🚀 Challenge Banao</button>
+        <button class="btn btn-outline" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="panel" id="panel-leaderboard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--accent2);">🏆 Leaderboard</div>
+      <select id="lb-challenge-filter" onchange="renderLB()" style="width:auto;padding:8px 14px;"></select>
+    </div>
+    <div class="lb-table">
+      <div class="lb-row head">
+        <div>Rank</div><div>Participant</div>
+        <div style="text-align:center">Days</div>
+        <div style="text-align:center">Streak</div>
+        <div style="text-align:center">Score</div>
+      </div>
+      <div id="lb-body"></div>
+    </div>
+    <div id="admin-lb-add" style="display:none;">
+      <div style="margin-top:20px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;">Manual Add</div>
+      <div class="add-participant">
+        <div class="form-group"><label>Naam</label><input type="text" id="p-name" placeholder="Naam"></div>
+        <div class="form-group"><label>Challenge</label><select id="p-challenge"></select></div>
+        <div class="form-group"><label>Days</label><input type="number" id="p-days" value="0" min="0"></div>
+        <div class="form-group"><label>Streak</label><input type="number" id="p-streak" value="0" min="0"></div>
+        <button class="btn btn-gold" onclick="addParticipant()" style="align-self:end;">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROVALS -->
+  <div class="panel" id="panel-approvals">
+    <div class="sec-title">✅ Join Requests</div>
+    <div id="pending-list"></div>
+    <div style="margin-top:24px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">Approved Members</div>
+      <div id="approved-list"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHuin1i8fuRA4tu6GzELGtyi2Uy2_vNsM",
+    authDomain: "challenge-builder-9fd39.firebaseapp.com",
+    projectId: "challenge-builder-9fd39",
+    storageBucket: "challenge-builder-9fd39.firebasestorage.app",
+    messagingSenderId: "217326608011",
+    appId: "1:217326608011:web:bfa1c3b83c1d6eaf7f7e8e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const DATA_DOC = doc(db, 'app', 'data');
+
+  let selectedCat = 'Fitness';
+  let state = { challenges: [], participants: [], acceptedBy: {}, requests: [], approvedMembers: [] };
+  let isAdmin = false;
+  let currentUser = null;
+  const ADMIN_PASSWORD = 'PunitCREATES@01';
+  let saveTimeout = null;
+
+  function tryAdminLogin() {
+    const pw = document.getElementById('admin-pw-input').value;
+    if (pw === ADMIN_PASSWORD) {
+      isAdmin = true; currentUser = 'Admin';
+      sessionStorage.setItem('cb_admin', '1');
+      hideLockScreens(); applyRole(); showNotif('Welcome Admin! 🔥');
+    } else {
+      document.getElementById('pw-error').style.display = 'block';
+      document.getElementById('admin-pw-input').value = '';
+      setTimeout(() => document.getElementById('pw-error').style.display = 'none', 2000);
+    }
+  }
+  window.tryAdminLogin = tryAdminLogin;
+
+  async function sendJoinRequest() {
+    const name = document.getElementById('guest-name-input').value.trim();
+    if (!name) { showNotif('Naam zaroori hai!', true); return; }
+    if (state.approvedMembers && state.approvedMembers.includes(name.toLowerCase())) {
+      localStorage.setItem('cb_guest_name', name);
+      currentUser = name; isAdmin = false;
+      hideLockScreens(); applyRole();
+      showNotif('Welcome back ' + name + '! 🎉'); return;
+    }
+    if (!state.requests) state.requests = [];
+    const exists = state.requests.find(r => r.name.toLowerCase() === name.toLowerCase());
+    if (!exists) {
+      state.requests.push({ name, time: new Date().toISOString(), status: 'pending' });
+      await saveState();
+    }
+    localStorage.setItem('cb_guest_name', name);
+    document.getElementById('lock-overlay').style.display = 'none';
+    document.getElementById('waiting-overlay').style.display = 'flex';
+    document.getElementById('waiting-name').textContent = '👤 ' + name;
+  }
+  window.sendJoinRequest = sendJoinRequest;
+
+  async function checkApproval() {
+    await loadState();
+    const name = localStorage.getItem('cb_guest_name');
+    if (name && state.approvedMembers && state.approvedMembers.includes(name.toLowerCase())) {
+      currentUser = name; isAdmin = false;
+      hideLockScreens(); applyRole();
+      showNotif('Approved! Welcome ' + name + '! 🎉');
+    } else {
+      showNotif('Abhi approved nahi hua — thoda wait karo!', true);
+    }
+  }
+  window.checkApproval = checkApproval;
+
+  function cancelRequest() {
+    document.getElementById('waiting-overlay').style.display = 'none';
+    document.getElementById('lock-overlay').style.display = 'flex';
+  }
+  window.cancelRequest = cancelRequest;
+
+  async function approveRequest(name) {
+    if (!state.approvedMembers) state.approvedMembers = [];
+    if (!state.approvedMembers.includes(name.toLowerCase())) state.approvedMembers.push(name.toLowerCase());
+    state.requests = state.requests.map(r => r.name === name ? { ...r, status: 'approved' } : r);
+    await saveState();
+    showNotif(name + ' approved! ✅'); renderApprovals(); updateStats();
+  }
+  window.approveRequest = approveRequest;
+
+  async function rejectRequest(name) {
+    state.requests = state.requests.filter(r => r.name !== name);
+    await saveState();
+    showNotif(name + ' ki request reject ho gayi'); renderApprovals();
+  }
+  window.rejectRequest = rejectRequest;
+
+  async function removeApproved(name) {
+    state.approvedMembers = (state.approvedMembers || []).filter(m => m !== name.toLowerCase());
+    state.participants = state.participants.filter(p => p.name.toLowerCase() !== name.toLowerCase());
+    await saveState();
+    showNotif(name + ' ko hata diya'); renderApprovals(); updateStats();
+  }
+  window.removeApproved = removeApproved;
+
+  function hideLockScreens() {
+    document.getElementById('lock-overlay').style.display = 'none';
+    document.getElementById('waiting-overlay').style.display = 'none';
+  }
+
+  function applyRole() {
+    const createTab = document.getElementById('create-tab');
+    const approvalTab = document.getElementById('approval-tab');
+    const lbAdd = document.getElementById('admin-lb-add');
+    const badge = document.getElementById('role-badge');
+    if (isAdmin) {
+      createTab.style.display = '';
+      approvalTab.style.display = '';
+      if (lbAdd) lbAdd.style.display = 'block';
+      badge.innerHTML = '<span class="admin-badge" style="cursor:pointer;">👑 ADMIN ↩</span>';
+    } else {
+      createTab.style.display = 'none';
+      approvalTab.style.display = 'none';
+      if (lbAdd) lbAdd.style.display = 'none';
+      const gName = currentUser || localStorage.getItem('cb_guest_name') || 'Guest';
+      badge.innerHTML = '<span class="guest-badge" style="cursor:pointer;">👥 ' + gName + ' ↩</span>';
+    }
+    renderChallenges(); renderApprovals(); updatePendingBadge();
+  }
+
+  function logoutUser() {
+    if (!confirm('Switch karna chahte ho?')) return;
+    sessionStorage.clear(); localStorage.removeItem('cb_guest_name');
+    currentUser = null; isAdmin = false; location.reload();
+  }
+  window.logoutUser = logoutUser;
+
+  async function loadState() {
+    try {
+      const snap = await getDoc(DATA_DOC);
+      if (snap.exists()) {
+        const d = snap.data();
+        state.challenges = d.challenges || [];
+        state.participants = d.participants || [];
+        state.acceptedBy = d.acceptedBy || {};
+        state.requests = d.requests || [];
+        state.approvedMembers = d.approvedMembers || [];
+      }
+    } catch(e) {}
+  }
+
+  function saveState() {
+    clearTimeout(saveTimeout);
+    return new Promise(res => {
+      saveTimeout = setTimeout(async () => {
+        try {
+          await setDoc(DATA_DOC, {
+            challenges: state.challenges, participants: state.participants,
+            acceptedBy: state.acceptedBy || {}, requests: state.requests || [],
+            approvedMembers: state.approvedMembers || []
+          });
+        } catch(e) {}
+        res();
+      }, 500);
+    });
+  }
+
+  function startRealtime() {
+    let prevPending = (state.requests || []).filter(r => r.status === 'pending').length;
+    onSnapshot(DATA_DOC, (snap) => {
+      if (!snap.exists()) return;
+      const d = snap.data();
+      state.challenges = d.challenges || [];
+      state.participants = d.participants || [];
+      state.acceptedBy = d.acceptedBy || {};
+      state.requests = d.requests || [];
+      state.approvedMembers = d.approvedMembers || [];
+      const newPending = state.requests.filter(r => r.status === 'pending').length;
+      if (isAdmin && newPending > prevPending) showNotif('🔔 Nayi join request aayi!');
+      prevPending = newPending;
+      renderChallenges(); renderLB(); updateStats(); renderApprovals(); updatePendingBadge();
+    });
+  }
+
+  function updatePendingBadge() {
+    const tab = document.getElementById('approval-tab');
+    if (!tab || !isAdmin) return;
+    const pending = (state.requests || []).filter(r => r.status === 'pending').length;
+    const ex = tab.querySelector('.tab-badge');
+    if (ex) ex.remove();
+    if (pending > 0) {
+      const b = document.createElement('span');
+      b.className = 'tab-badge'; b.textContent = pending; tab.appendChild(b);
+    }
+  }
+
+  function showTab(tab, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    el.classList.add('active');
+    if (tab === 'leaderboard') renderLB();
+    if (tab === 'approvals') renderApprovals();
+  }
+  window.showTab = showTab;
+
+  function selectCat(el) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected'); selectedCat = el.dataset.cat;
+  }
+  window.selectCat = selectCat;
+
+  function togglePrivateCode() {
+    const cb = document.getElementById('c-private');
+    document.getElementById('private-code-box').style.display = cb.checked ? 'block' : 'none';
+  }
+  window.togglePrivateCode = togglePrivateCode;
+
+  function addRule() {
+    const c = document.getElementById('rules-container');
+    const d = document.createElement('div'); d.className = 'rule-item';
+    d.innerHTML = '<input type="text" placeholder="Naya rule..."><button class="del-btn" onclick="delRule(this)">×</button>';
+    c.appendChild(d);
+  }
+  window.addRule = addRule;
+
+  function delRule(btn) { btn.parentElement.remove(); }
+  window.delRule = delRule;
+
+  function clearForm() {
+    ['c-name','c-desc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('c-points').value = 10;
+    document.getElementById('c-diff').value = 'Medium';
+    document.getElementById('c-private').checked = false;
+    document.getElementById('c-access-code').value = '';
+    document.getElementById('private-code-box').style.display = 'none';
+    document.getElementById('rules-container').innerHTML = '<div class="rule-item"><input type="text" placeholder="Rule 1"><button class="del-btn" onclick="delRule(this)">×</button></div>';
+  }
+  window.clearForm = clearForm;
+
+  async function createChallenge() {
+    const name = document.getElementById('c-name').value.trim();
+    if (!name) { showNotif('Challenge naam required!', true); return; }
+    const start = document.getElementById('c-start').value;
+    const end = document.getElementById('c-end').value;
+    if (!start || !end) { showNotif('Dates required!', true); return; }
+    const isPrivate = document.getElementById('c-private').checked;
+    const accessCode = document.getElementById('c-access-code').value.trim().toUpperCase();
+    if (isPrivate && !accessCode) { showNotif('Private challenge ke liye Access Code zaroori hai!', true); return; }
+    const rules = [...document.querySelectorAll('#rules-container input')].map(i => i.value.trim()).filter(v => v);
+    const totalDays = Math.max(1, Math.ceil((new Date(end) - new Date(start)) / 86400000) + 1);
+    state.challenges.push({
+      id: Date.now(), name, desc: document.getElementById('c-desc').value.trim(),
+      category: selectedCat, start, end,
+      points: parseInt(document.getElementById('c-points').value) || 10,
+      difficulty: document.getElementById('c-diff').value,
+      rules, totalDays, completedDays: [], isPrivate, accessCode: isPrivate ? accessCode : ''
+    });
+    await saveState();
+    showNotif('Challenge create ho gaya! 🔥' + (isPrivate ? ' Code: ' + accessCode : ''));
+    clearForm(); renderChallenges(); updateStats();
+    showTab('challenges', document.querySelectorAll('.tab')[0]);
+  }
+  window.createChallenge = createChallenge;
+
+  function renderChallenges() {
+    const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+    const cat = document.getElementById('filter-cat')?.value || '';
+    const status = document.getElementById('filter-status')?.value || '';
+    let list = state.challenges.filter(c => {
+      if (c.isPrivate && !isAdmin) return false;
+      if (search && !c.name.toLowerCase().includes(search)) return false;
+      if (cat && c.category !== cat) return false;
+      const pct = Math.round((c.completedDays.length / c.totalDays) * 100);
+      if (status === 'completed' && pct < 100) return false;
+      if (status === 'active' && pct >= 100) return false;
+      return true;
+    });
+    const el = document.getElementById('challenges-list');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div style="font-size:40px;opacity:0.4;margin-bottom:10px;">⚡</div><div style="font-size:16px;font-weight:600;">Koi challenge nahi</div><div style="font-size:13px;margin-top:4px;">' + (isAdmin ? 'Create tab mein banao!' : 'Admin abhi challenge add karega!') + '</div></div>';
+      return;
+    }
+    const dColor = { Easy: '#00d4aa', Medium: '#f8b400', Hard: '#ff4d6d', Extreme: '#ff006e' };
+    el.innerHTML = list.map(c => {
+      const pct = Math.min(100, Math.round((c.completedDays.length / c.totalDays) * 100));
+      const rulesHtml = c.rules.length ? '<ul class="rules-list">' + c.rules.map(r => '<li>' + r + '</li>').join('') + '</ul>' : '';
+      const acceptCount = ((state.acceptedBy && state.acceptedBy[c.id]) || []).length;
+      const privateBadge = c.isPrivate ? '<span class="badge badge-private">🔒 Private</span>' : '';
+      const acceptBadge = acceptCount > 0 ? '<span style="font-size:11px;color:var(--accent3);font-weight:700;">✅ ' + acceptCount + ' Accepted</span>' : '';
+      const adminCode = isAdmin && c.isPrivate ? '<div style="font-size:12px;color:var(--accent4);margin-bottom:8px;background:rgba(124,92,191,0.1);padding:6px 10px;border-radius:6px;">🔑 Code: <b>' + c.accessCode + '</b></div>' : '';
+      let btns = '';
+      if (c.isPrivate && !isAdmin) {
+        btns = '<button class="btn btn-accept btn-sm" onclick="enterPrivateCode(' + c.id + ')">🔑 Enter Code</button>';
+      } else {
+        btns = '<button class="btn btn-accept btn-sm" onclick="acceptChallenge(' + c.id + ')">⚡ Accept</button>' +
+          '<button class="btn btn-success btn-sm" onclick="openTracking(' + c.id + ')">📊 Track</button>' +
+          (isAdmin ? '<button class="btn btn-sm btn-outline" onclick="deleteChallenge(' + c.id + ')">🗑 Delete</button>' : '');
+      }
+      return '<div class="challenge-card' + (c.isPrivate ? ' private-card' : '') + '">' +
+        '<div class="card-top"><div class="card-title">' + c.name + '</div>' +
+        '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center;">' +
+        '<span class="badge badge-' + c.category + '">' + c.category + '</span>' +
+        '<span style="font-size:12px;color:' + (dColor[c.difficulty]||'var(--muted)') + ';font-weight:700;">' + c.difficulty + '</span>' +
+        privateBadge + acceptBadge + '</div></div>' +
+        '<div class="card-body">' + (c.desc ? '<div class="card-desc">' + c.desc + '</div>' : '') + rulesHtml + adminCode +
+        '<div class="progress-area"><div class="progress-label"><span>Progress</span><span>' + c.completedDays.length + '/' + c.totalDays + ' (' + pct + '%)</span></div>' +
+        '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>' +
+        '<div class="card-meta"><span>📅 ' + c.start + ' → ' + c.end + '</span><span>⭐ ' + c.points + ' pts/day</span></div>' +
+        '<div class="card-actions">' + btns + '</div></div></div>';
+    }).join('');
+  }
+  window.renderChallenges = renderChallenges;
+
+  function enterPrivateCode(id) {
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('modal-area').innerHTML =
+      '<div class="modal-overlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="modal"><div class="modal-header"><div class="modal-title">🔑 Access Code</div><button class="close-btn" onclick="closeModal()">×</button></div>' +
+      '<div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:16px;"><div style="font-size:17px;font-weight:700;">' + c.name + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);">Private challenge — code daalo</div></div>' +
+      '<div class="form-group" style="margin-bottom:10px;"><label>Access Code</label>' +
+      '<input type="text" id="pc-input" placeholder="Code likhein..." style="text-transform:uppercase;letter-spacing:3px;font-weight:700;text-align:center;" onkeydown="if(event.key===\'Enter\')verifyCode(' + id + ')"></div>' +
+      '<div id="pc-error" style="color:var(--accent);font-size:13px;margin-bottom:12px;display:none;">❌ Galat code!</div>' +
+      '<div style="display:flex;gap:10px;"><button class="btn btn-accept" style="flex:1;" onclick="verifyCode(' + id + ')">🔓 Unlock</button>' +
+      '<button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button></div></div></div>';
+  }
+  window.enterPrivateCode = enterPrivateCode;
+
+  function verifyCode(id) {
+    const c = state.challenges.find(x => x.id === id);
+    const input = (document.getElementById('pc-input')?.value || '').trim().toUpperCase();
+    if (input === c.accessCode) { closeModal(); acceptChallenge(id); }
+    else {
+      document.getElementById('pc-error').style.display = 'block';
+      setTimeout(() => { const e = document.getElementById('pc-error'); if(e) e.style.display='none'; }, 2000);
+    }
+  }
+  window.verifyCode = verifyCode;
+
+  function acceptChallenge(id) {
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    const savedName = currentUser || localStorage.getItem('cb_guest_name') || '';
+    document.getElementById('modal-area').innerHTML =
+      '<div class="modal-overlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="modal"><div class="modal-header"><div class="modal-title">⚡ Accept Challenge</div><button class="close-btn" onclick="closeModal()">×</button></div>' +
+      '<div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:14px;">' +
+      '<div style="font-size:17px;font-weight:700;">' + c.name + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);">' + c.totalDays + ' days · ' + c.points + ' pts/day</div></div>' +
+      '<div class="form-group" style="margin-bottom:8px;"><label>Tumhara Naam</label>' +
+      '<input type="text" id="accept-name" value="' + savedName + '" placeholder="Apna naam..."></div>' +
+      (savedName ? '<div style="font-size:12px;color:var(--accent3);margin-bottom:12px;">✅ Saved naam</div>' : '<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Naam save ho jaayega</div>') +
+      '<div style="display:flex;gap:10px;"><button class="btn btn-accept" style="flex:1;" onclick="confirmAccept(' + id + ')">🔥 Accept!</button>' +
+      '<button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button></div></div></div>';
+  }
+  window.acceptChallenge = acceptChallenge;
+
+  async function confirmAccept(id) {
+    const name = (document.getElementById('accept-name')?.value || '').trim();
+    if (!name) { showNotif('Naam zaroori!', true); return; }
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    localStorage.setItem('cb_guest_name', name);
+    const existing = state.participants.find(p => p.name.toLowerCase() === name.toLowerCase() && p.challengeId === id);
+    if (existing) { showNotif('✅ ' + name + ' pehle se join hai!'); closeModal(); return; }
+    state.participants.push({ id: Date.now(), name, challengeId: id, days: 0, streak: 0 });
+    if (!state.acceptedBy[id]) state.acceptedBy[id] = [];
+    if (!state.acceptedBy[id].includes(name)) state.acceptedBy[id].push(name);
+    await saveState();
+    updateStats(); renderChallenges(); renderLB(); closeModal();
+    showNotif('🔥 ' + name + ' ne accept kar liya!');
+  }
+  window.confirmAccept = confirmAccept;
+
+  function openTracking(id) {
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    const days = [];
+    const start = new Date(c.start);
+    for (let i = 0; i < c.totalDays; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const pct = Math.min(100, Math.round((c.completedDays.length / c.totalDays) * 100));
+    const cells = days.map((d, i) => {
+      const done = c.completedDays.includes(d);
+      const past = d < today;
+      return '<div class="day-cell ' + (done ? 'done' : past ? 'missed' : '') + '" onclick="toggleDay(' + id + ',\'' + d + '\')" title="' + d + '"><span style="font-weight:700;">D' + (i+1) + '</span><span>' + (done ? '✓' : past ? '–' : '') + '</span></div>';
+    }).join('');
+    document.getElementById('modal-area').innerHTML =
+      '<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">' +
+      '<div class="modal-header"><div class="modal-title">' + c.name + '</div><button class="close-btn" onclick="closeModal()">×</button></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">' +
+      '<div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Done</div><div style="font-size:24px;font-weight:700;color:var(--accent3);">' + c.completedDays.length + '</div></div>' +
+      '<div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Baki</div><div style="font-size:24px;font-weight:700;color:var(--accent);">' + (c.totalDays - c.completedDays.length) + '</div></div>' +
+      '<div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Score</div><div style="font-size:24px;font-weight:700;color:var(--accent2);">' + (c.completedDays.length * c.points) + '</div></div></div>' +
+      '<div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Daily Tracker</div>' +
+      '<div class="day-grid">' + cells + '</div>' +
+      '<div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:4px;"><span>Progress</span><span>' + pct + '%</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>' +
+      (c.rules.length ? '<div style="margin-top:12px;"><div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Rules</div><ul class="rules-list">' + c.rules.map(r => '<li>' + r + '</li>').join('') + '</ul></div>' : '') +
+      '</div></div>';
+  }
+  window.openTracking = openTracking;
+
+  async function toggleDay(id, date) {
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    const idx = c.completedDays.indexOf(date);
+    if (idx >= 0) c.completedDays.splice(idx, 1);
+    else c.completedDays.push(date);
+    const userName = currentUser || localStorage.getItem('cb_guest_name');
+    if (userName) {
+      const p = state.participants.find(p => p.name.toLowerCase() === userName.toLowerCase() && p.challengeId === id);
+      if (p) { p.days = c.completedDays.length; p.streak = c.completedDays.length; }
+    }
+    await saveState();
+    renderChallenges(); updateStats(); openTracking(id);
+  }
+  window.toggleDay = toggleDay;
+
+  async function deleteChallenge(id) {
+    if (!confirm('Challenge delete karna chahte ho?')) return;
+    state.challenges = state.challenges.filter(c => c.id !== id);
+    state.participants = state.participants.filter(p => p.challengeId !== id);
+    await saveState();
+    renderChallenges(); renderLB(); updateStats(); showNotif('Challenge delete ho gaya');
+  }
+  window.deleteChallenge = deleteChallenge;
+
+  function closeModal() { document.getElementById('modal-area').innerHTML = ''; }
+  window.closeModal = closeModal;
+
+  function renderLB() {
+    const fSelect = document.getElementById('lb-challenge-filter');
+    const cSelect = document.getElementById('p-challenge');
+    const prevVal = fSelect ? fSelect.value : 'all';
+    if (fSelect) {
+      fSelect.innerHTML = '<option value="all">Sab Challenges</option>' + state.challenges.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
+      fSelect.value = prevVal;
+    }
+    if (cSelect) cSelect.innerHTML = state.challenges.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
+    const filter = fSelect ? fSelect.value : 'all';
+    let parts = state.participants.filter(p => p.challengeId);
+    if (filter && filter !== 'all') parts = parts.filter(p => p.challengeId == filter);
+    parts = parts.map(p => {
+      const c = state.challenges.find(x => x.id === p.challengeId);
+      return { ...p, score: (p.days || 0) * (c ? c.points : 10), challengeName: c ? c.name : '—' };
+    }).sort((a, b) => b.score - a.score);
+    const body = document.getElementById('lb-body');
+    if (!parts.length) { body.innerHTML = '<div class="empty-state"><div style="font-size:36px;opacity:0.4;margin-bottom:8px;">🏆</div><div>Koi participant nahi</div></div>'; return; }
+    const me = (currentUser || localStorage.getItem('cb_guest_name') || '').toLowerCase();
+    body.innerHTML = parts.map((p, i) => {
+      const rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
+      const med = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      const isMe = me && p.name.toLowerCase() === me;
+      return '<div class="lb-row" style="' + (isMe ? 'background:rgba(255,77,109,0.06);' : '') + '">' +
+        '<div class="rank ' + rc + '">' + (med||(i+1)) + '</div>' +
+        '<div><div style="font-weight:700;font-size:15px;">' + p.name + (isMe?' <span style="font-size:11px;color:var(--accent3);">(You)</span>':'') + '</div><div style="font-size:12px;color:var(--muted);">' + p.challengeName + '</div></div>' +
+        '<div class="lb-num" style="color:var(--accent3);">' + (p.days||0) + '</div>' +
+        '<div class="lb-num" style="color:var(--accent2);">🔥' + (p.streak||0) + '</div>' +
+        '<div class="lb-num" style="color:var(--accent);">' + p.score + '</div></div>';
+    }).join('');
+  }
+  window.renderLB = renderLB;
+
+  async function addParticipant() {
+    const name = document.getElementById('p-name').value.trim();
+    const cId = parseInt(document.getElementById('p-challenge').value);
+    const days = parseInt(document.getElementById('p-days').value) || 0;
+    const streak = parseInt(document.getElementById('p-streak').value) || 0;
+    if (!name) { showNotif('Naam zaroori!', true); return; }
+    const existing = state.participants.find(p => p.name.toLowerCase() === name.toLowerCase() && p.challengeId === cId);
+    if (existing) { existing.days = days; existing.streak = streak; }
+    else state.participants.push({ id: Date.now(), name, challengeId: cId, days, streak });
+    await saveState();
+    document.getElementById('p-name').value = '';
+    document.getElementById('p-days').value = 0;
+    document.getElementById('p-streak').value = 0;
+    showNotif(name + ' leaderboard mein! 🏆'); renderLB(); updateStats();
+  }
+  window.addParticipant = addParticipant;
+
+  function renderApprovals() {
+    if (!isAdmin) return;
+    const pending = (state.requests || []).filter(r => r.status === 'pending');
+    const approved = state.approvedMembers || [];
+    const pList = document.getElementById('pending-list');
+    if (!pList) return;
+    pList.innerHTML = !pending.length
+      ? '<div style="background:var(--surface2);border-radius:10px;padding:16px;text-align:center;color:var(--muted);margin-bottom:10px;">✅ Koi pending request nahi</div>'
+      : pending.map(r =>
+          '<div class="pending-card">' +
+          '<div><div style="font-weight:700;font-size:16px;">👤 ' + r.name + '</div><div style="font-size:12px;color:var(--muted);">⏰ ' + new Date(r.time).toLocaleString() + '</div></div>' +
+          '<div style="display:flex;gap:8px;"><button class="btn-approve" onclick="approveRequest(\'' + r.name + '\')">✅ Approve</button>' +
+          '<button class="btn-reject" onclick="rejectRequest(\'' + r.name + '\')">❌ Reject</button></div></div>'
+        ).join('');
+    const aList = document.getElementById('approved-list');
+    if (!aList) return;
+    aList.innerHTML = !approved.length
+      ? '<div style="color:var(--muted);font-size:14px;">Koi approved member nahi</div>'
+      : approved.map(name =>
+          '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:10px;padding:10px 14px;margin-bottom:8px;">' +
+          '<div style="font-weight:700;">✅ ' + name + '</div>' +
+          '<button class="btn-reject" style="font-size:11px;padding:4px 10px;" onclick="removeApproved(\'' + name + '\')">Remove</button></div>'
+        ).join('');
+  }
+
+  function updateStats() {
+    document.getElementById('total-count').textContent = state.challenges.length;
+    document.getElementById('active-count').textContent = state.challenges.filter(c => (c.completedDays||[]).length < c.totalDays).length;
+    const uniqueMembers = [...new Set(state.participants.map(p => p.name.toLowerCase()))].length;
+    document.getElementById('part-count').textContent = (state.approvedMembers || []).length || uniqueMembers;
+  }
+
+  function showNotif(msg, err = false) {
+    const n = document.getElementById('notif');
+    n.textContent = msg; n.className = 'notification' + (err ? ' err' : '');
+    n.classList.add('show');
+    setTimeout(() => n.classList.remove('show'), 3000);
+  }
+  window.showNotif = showNotif;
+
+  // INIT
+  const today = new Date().toISOString().slice(0, 10);
+  const end30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  document.getElementById('c-start').value = today;
+  document.getElementById('c-end').value = end30;
+  const savedName = localStorage.getItem('cb_guest_name');
+  if (savedName) { const gi = document.getElementById('guest-name-input'); if (gi) gi.value = savedName; }
+
+  loadState().then(() => {
+    startRealtime();
+    if (sessionStorage.getItem('cb_admin') === '1') {
+      isAdmin = true; currentUser = 'Admin'; hideLockScreens(); applyRole();
+    } else if (savedName && state.approvedMembers && state.approvedMembers.includes(savedName.toLowerCase())) {
+      currentUser = savedName; isAdmin = false; hideLockScreens(); applyRole();
+    }
+    renderChallenges(); renderLB(); updateStats();
+  });
+</script>
+</body>
+</html>
