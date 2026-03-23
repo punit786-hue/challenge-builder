@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a26; --surface3: #22223a;
+    --accent: #ff4d6d; --accent2: #f8b400; --accent3: #00d4aa; --accent4: #7c5cbf;
+    --text: #e8e8f0; --muted: #6b6b8a; --border: rgba(255,255,255,0.08);
+  }
+  body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+  .app { max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
+
+  .header { padding: 24px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+  .logo span { color: var(--accent3); -webkit-text-fill-color: var(--accent3); }
+  .stats-bar { display: flex; gap: 16px; flex-wrap: wrap; }
+  .stat-pill { background: var(--surface2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 13px; color: var(--muted); }
+  .stat-pill b { color: var(--text); }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px; }
+  .tab { flex: 1; padding: 10px 16px; border: none; background: transparent; color: var(--muted); font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { background: var(--accent); color: white; }
+  .tab.active.t2 { background: var(--accent2); color: #111; }
+  .tab.active.t3 { background: var(--accent3); color: #111; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .tabs { flex-wrap: wrap; } }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+
+  input, select, textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 15px; outline: none; transition: border 0.2s; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .category-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat-pill { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .cat-pill:hover { border-color: var(--accent); color: var(--text); }
+  .cat-pill.selected { background: var(--accent); color: white; border-color: var(--accent); }
+  .cat-pill[data-cat="Fitness"].selected { background: #00d4aa; border-color: #00d4aa; color: #111; }
+  .cat-pill[data-cat="Learning"].selected { background: #7c5cbf; border-color: #7c5cbf; color: white; }
+  .cat-pill[data-cat="Productivity"].selected { background: #f8b400; border-color: #f8b400; color: #111; }
+  .cat-pill[data-cat="Social"].selected { background: #ff4d6d; border-color: #ff4d6d; color: white; }
+  .cat-pill[data-cat="Finance"].selected { background: #4ade80; border-color: #4ade80; color: #111; }
+
+  .rules-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+  .rules-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .rules-title { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .rule-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .rule-item input { flex: 1; }
+  .del-btn { background: transparent; border: 1px solid var(--border); color: var(--accent); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .del-btn:hover { background: var(--accent); color: white; }
+
+  .btn { padding: 12px 24px; border: none; border-radius: 8px; font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 6px; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-outline:hover { border-color: var(--accent3); color: var(--accent3); }
+  .btn-success { background: var(--accent3); color: #111; }
+  .btn-gold { background: var(--accent2); color: #111; }
+  .btn-accept { background: var(--accent4); color: white; border: none; }
+  .btn-accept:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-accept.accepted { background: var(--surface3); color: var(--accent3); border: 1px solid var(--accent3); cursor: default; transform: none !important; opacity: 1 !important; }
+
+  .challenges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .challenge-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: all 0.25s; }
+  .challenge-card:hover { border-color: rgba(255,77,109,0.3); transform: translateY(-2px); }
+  .card-top { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card-title { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+  .badge-Fitness { background: rgba(0,212,170,0.15); color: #00d4aa; }
+  .badge-Learning { background: rgba(124,92,191,0.2); color: #a07ce0; }
+  .badge-Productivity { background: rgba(248,180,0,0.15); color: #f8b400; }
+  .badge-Social { background: rgba(255,77,109,0.15); color: #ff4d6d; }
+  .badge-Finance { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .badge-Other { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .card-body { padding: 12px 16px; }
+  .card-desc { color: var(--muted); font-size: 14px; margin-bottom: 12px; line-height: 1.5; }
+  .progress-area { margin-bottom: 12px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .progress-bar { height: 6px; background: var(--surface3); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s ease; }
+  .card-meta { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 12px; flex-wrap: wrap; }
+  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rules-list { background: var(--surface2); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+  .rules-list li { font-size: 13px; color: var(--muted); padding: 3px 0 3px 14px; position: relative; list-style: none; }
+  .rules-list li:before { content: '›'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+  .lb-table { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .lb-row { display: grid; grid-template-columns: 48px 1fr 80px 80px 80px; padding: 14px 20px; align-items: center; border-bottom: 1px solid var(--border); transition: background 0.15s; gap: 8px; }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-row:hover { background: var(--surface2); }
+  .lb-row.head { background: var(--surface2); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .rank { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--muted); }
+  .rank.r1 { color: var(--accent2); }
+  .rank.r2 { color: #c0c0c0; }
+  .rank.r3 { color: #cd7f32; }
+  .lb-name { font-weight: 600; font-size: 16px; }
+  .lb-sub { font-size: 12px; color: var(--muted); }
+  .lb-num { text-align: center; font-weight: 700; font-size: 16px; }
+  @media (max-width: 600px) { .lb-row { grid-template-columns: 40px 1fr 60px 60px; } .lb-row > div:nth-child(4) { display: none; } }
+
+  .add-participant { background: var(--surface2); border: 1px dashed var(--border); border-radius: 14px; padding: 20px; margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+  @media (max-width: 600px) { .add-participant { grid-template-columns: 1fr; } }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent); }
+  .close-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .close-btn:hover { color: var(--text); }
+  .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 16px 0; }
+  .day-cell { aspect-ratio: 1; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted); cursor: pointer; transition: all 0.2s; flex-direction: column; gap: 2px; }
+  .day-cell:hover { border-color: var(--accent3); }
+  .day-cell.done { background: rgba(0,212,170,0.15); border-color: var(--accent3); color: var(--accent3); }
+  .day-cell.missed { background: rgba(255,77,109,0.07); border-color: rgba(255,77,109,0.2); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+  .notification { position: fixed; top: 20px; right: 20px; background: var(--accent3); color: #111; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; z-index: 999; transform: translateY(-60px); opacity: 0; transition: all 0.3s; }
+  .notification.show { transform: translateY(0); opacity: 1; }
+  .notification.err { background: var(--accent); color: #fff; }
+
+  .form-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .sec-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent); margin-bottom: 20px; }
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-bar input, .filter-bar select { flex: 1; min-width: 150px; }
+
+  .admin-lock-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .admin-lock-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 36px 32px; width: 100%; max-width: 380px; text-align: center; }
+  .lock-icon { font-size: 48px; margin-bottom: 16px; }
+  .lock-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--accent); margin-bottom: 6px; }
+  .lock-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+  .admin-badge { background: rgba(255,77,109,0.15); border: 1px solid rgba(255,77,109,0.3); color: var(--accent); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: inline-block; margin-bottom: 8px; }
+  .guest-badge { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); color: var(--accent3); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="notification" id="notif"></div>
+<div id="modal-area"></div>
+
+<div class="admin-lock-overlay" id="lock-overlay">
+  <div class="admin-lock-box">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">Challenge Builder</div>
+    <div class="lock-sub">Admin hain? Password enter karein.<br>Participant hain? Guest ke roop mein continue karein.</div>
+    <div style="margin-bottom:14px;">
+      <input type="password" id="admin-pw-input" placeholder="Admin password..." style="text-align:center;letter-spacing:2px;" onkeydown="if(event.key==='Enter')tryAdminLogin()">
+      <div id="pw-error" style="color:var(--accent);font-size:13px;margin-top:6px;display:none;">❌ Galat password!</div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:16px;" onclick="tryAdminLogin()">🔓 Admin Login</button>
+    <div style="border-top:1px solid var(--border);padding-top:16px;">
+      <div class="guest-badge" style="margin-bottom:10px;">Guest Access</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Challenges dekhein, accept karein, track karein</p>
+      <div style="margin-bottom:10px;">
+        <input type="text" id="guest-name-input" placeholder="Apna naam likhein (optional)..." style="font-size:14px;">
+      </div>
+      <button class="btn btn-outline" style="width:100%;" onclick="continueAsGuest()">👥 Guest ke roop mein Continue</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">Challenge <span>Builder</span></div>
+    <div class="stats-bar">
+      <div class="stat-pill">Challenges: <b id="total-count">0</b></div>
+      <div class="stat-pill">Active: <b id="active-count">0</b></div>
+      <div class="stat-pill">Participants: <b id="part-count">0</b></div>
+      <div id="role-badge" onclick="logoutUser()" style="cursor:pointer;" title="Click karke switch karo"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('challenges', this)">📋 Challenges</button>
+    <button class="tab t2" id="create-tab" onclick="showTab('create', this)" style="display:none;">✚ Create</button>
+    <button class="tab t3" onclick="showTab('leaderboard', this)">🏆 Leaderboard</button>
+  </div>
+
+  <!-- CHALLENGES PANEL -->
+  <div class="panel active" id="panel-challenges">
+    <div class="filter-bar">
+      <input type="text" id="search-input" placeholder="🔍 Search challenges..." oninput="renderChallenges()">
+      <select id="filter-cat" onchange="renderChallenges()" style="max-width:160px;">
+        <option value="">All Categories</option>
+        <option>Fitness</option><option>Learning</option>
+        <option>Productivity</option><option>Social</option>
+        <option>Finance</option><option>Other</option>
+      </select>
+      <select id="filter-status" onchange="renderChallenges()" style="max-width:140px;">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+    <div class="challenges-grid" id="challenges-list"></div>
+  </div>
+
+  <!-- CREATE PANEL -->
+  <div class="panel" id="panel-create">
+    <div class="form-box">
+      <div class="sec-title">New Challenge</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Challenge Ka Naam</label>
+          <input type="text" id="c-name" placeholder="e.g. 30-Day Pushup Challenge">
+        </div>
+        <div class="form-group full">
+          <label>Description</label>
+          <textarea id="c-desc" placeholder="Challenge ke baare mein likhein..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="c-start">
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" id="c-end">
+        </div>
+        <div class="form-group">
+          <label>Points Per Day</label>
+          <input type="number" id="c-points" value="10" min="1" max="1000">
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="c-diff">
+            <option>Easy</option><option selected>Medium</option>
+            <option>Hard</option><option>Extreme</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Category</label>
+          <div class="category-pills">
+            <div class="cat-pill selected" data-cat="Fitness" onclick="selectCat(this)">💪 Fitness</div>
+            <div class="cat-pill" data-cat="Learning" onclick="selectCat(this)">📚 Learning</div>
+            <div class="cat-pill" data-cat="Productivity" onclick="selectCat(this)">⚡ Productivity</div>
+            <div class="cat-pill" data-cat="Social" onclick="selectCat(this)">🤝 Social</div>
+            <div class="cat-pill" data-cat="Finance" onclick="selectCat(this)">💰 Finance</div>
+            <div class="cat-pill" data-cat="Other" onclick="selectCat(this)">🎯 Other</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-header">
+          <div class="rules-title">Challenge Rules</div>
+          <button class="btn btn-sm btn-outline" onclick="addRule()">+ Rule Add Karo</button>
+        </div>
+        <div id="rules-container">
+          <div class="rule-item">
+            <input type="text" placeholder="e.g. Roz 50 pushups karo">
+            <button class="del-btn" onclick="delRule(this)">×</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="createChallenge()">🚀 Challenge Banao</button>
+        <button class="btn btn-outline" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD PANEL -->
+  <div class="panel" id="panel-leaderboard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--accent2);">🏆 Leaderboard</div>
+      <select id="lb-challenge-filter" onchange="renderLB()" style="width:auto;padding:8px 14px;">
+        <option value="all">Sab Challenges</option>
+      </select>
+    </div>
+    <div class="lb-table">
+      <div class="lb-row head">
+        <div>Rank</div><div>Participant</div>
+        <div style="text-align:center">Days</div>
+        <div style="text-align:center">Streak</div>
+        <div style="text-align:center">Score</div>
+      </div>
+      <div id="lb-body"></div>
+    </div>
+
+    <div style="margin-top:24px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">Add Participant</div>
+    <div class="add-participant">
+      <div class="form-group">
+        <label>Naam</label>
+        <input type="text" id="p-name" placeholder="Participant naam">
+      </div>
+      <div class="form-group">
+        <label>Challenge</label>
+        <select id="p-challenge"></select>
+      </div>
+      <div class="form-group">
+        <label>Days Completed</label>
+        <input type="number" id="p-days" value="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Streak</label>
+        <input type="number" id="p-streak" value="0" min="0">
+      </div>
+      <button class="btn btn-gold" onclick="addParticipant()" style="align-self:end;">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHuin1i8fuRA4tu6GzELGtyi2Uy2_vNsM",
+    authDomain: "challenge-builder-9fd39.firebaseapp.com",
+    projectId: "challenge-builder-9fd39",
+    storageBucket: "challenge-builder-9fd39.firebasestorage.app",
+    messagingSenderId: "217326608011",
+    appId: "1:217326608011:web:bfa1c3b83c1d6eaf7f7e8e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const DATA_DOC = doc(db, 'app', 'data');
+
+  let selectedCat = 'Fitness';
+  let state = { challenges: [], participants: [], acceptedBy: {} };
+  let isAdmin = false;
+  const ADMIN_PASSWORD = 'PunitCREATES@01';
+  let saveTimeout = null;
+
+  function tryAdminLogin() {
+    const pw = document.getElementById('admin-pw-input').value;
+    if (pw === ADMIN_PASSWORD) {
+      isAdmin = true;
+      sessionStorage.setItem('cb_admin', '1');
+      hideLockScreen();
+      applyRole();
+      showNotif('Welcome Admin! 🔥');
+    } else {
+      document.getElementById('pw-error').style.display = 'block';
+      document.getElementById('admin-pw-input').value = '';
+      setTimeout(() => { document.getElementById('pw-error').style.display = 'none'; }, 2000);
+    }
+  }
+  window.tryAdminLogin = tryAdminLogin;
+
+  function continueAsGuest() {
+    const nameInput = document.getElementById('guest-name-input');
+    if (nameInput && nameInput.value.trim()) {
+      localStorage.setItem('cb_guest_name', nameInput.value.trim());
+    }
+    isAdmin = false;
+    sessionStorage.removeItem('cb_admin');
+    hideLockScreen();
+    applyRole();
+  }
+  window.continueAsGuest = continueAsGuest;
+
+  function hideLockScreen() {
+    document.getElementById('lock-overlay').style.display = 'none';
+  }
+
+  function applyRole() {
+    const createTab = document.getElementById('create-tab');
+    const badge = document.getElementById('role-badge');
+    if (isAdmin) {
+      createTab.style.display = '';
+      badge.innerHTML = '<span class="admin-badge" style="cursor:pointer;" title="Click to logout">👑 ADMIN ↩</span>';
+    } else {
+      createTab.style.display = 'none';
+      const gName = localStorage.getItem('cb_guest_name') || 'Guest';
+      badge.innerHTML = '<span class="guest-badge" style="cursor:pointer;" title="Click to switch">👥 ' + gName + ' ↩</span>';
+    }
+    renderChallenges();
+  }
+
+  function logoutUser() {
+    if (!confirm('Switch karna chahte ho? (Naam aur session clear ho jaayega)')) return;
+    sessionStorage.clear();
+    localStorage.removeItem('cb_guest_name');
+    location.reload();
+  }
+  window.logoutUser = logoutUser;
+
+  async function loadState() {
+    try {
+      const snap = await getDoc(DATA_DOC);
+      if (snap.exists()) {
+        const d = snap.data();
+        state.challenges = d.challenges || [];
+        state.participants = d.participants || [];
+        state.acceptedBy = d.acceptedBy || {};
+      }
+    } catch(e) { console.log('Load error:', e); }
+  }
+
+  function saveState() {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+      try {
+        await setDoc(DATA_DOC, {
+          challenges: state.challenges,
+          participants: state.participants,
+          acceptedBy: state.acceptedBy || {}
+        });
+      } catch(e) { console.log('Save error:', e); }
+    }, 500);
+  }
+
+  function startRealtime() {
+    onSnapshot(DATA_DOC, (snap) => {
+      if (snap.exists()) {
+        const d = snap.data();
+        state.challenges = d.challenges || [];
+        state.participants = d.participants || [];
+        state.acceptedBy = d.acceptedBy || {};
+        renderChallenges();
+        renderLB();
+        updateStats();
+      }
+    });
+  }
+
+  function showTab(tab, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    el.classList.add('active');
+    if (tab === 'leaderboard') renderLB();
+    if (tab === 'challenges') renderChallenges();
+  }
+
+  function selectCat(el) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCat = el.dataset.cat;
+  }
+
+  function addRule() {
+    const c = document.getElementById('rules-container');
+    const d = document.createElement('div');
+    d.className = 'rule-item';
+    d.innerHTML = '<input type="text" placeholder="Naya rule likhein..."><button class="del-btn" onclick="delRule(this)">×</button>';
+    c.appendChild(d);
+  }
+
+  function delRule(btn) { btn.parentElement.remove(); }
+
+  function clearForm() {
+    ['c-name','c-desc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('c-points').value = 10;
+    document.getElementById('c-diff').value = 'Medium';
+    document.getElementById('rules-container').innerHTML =
+      '<div class="rule-item"><input type="text" placeholder="Rule 1"><button class="del-btn" onclick="delRule(this)">×</button></div>';
+  }
+
+  function createChallenge() {
+    const name = document.getElementById('c-name').value.trim();
+    if (!name) { showNotif('Challenge naam required hai!', true); return; }
+    const start = document.getElementById('c-start').value;
+    const end = document.getElementById('c-end').value;
+    if (!start || !end) { showNotif('Start aur End date zaroori hai!', true); return; }
+    const rules = [...document.querySelectorAll('#rules-container input')].map(i => i.value.trim()).filter(v => v);
+    const totalDays = Math.max(1, Math.ceil((new Date(end) - new Date(start)) / 86400000) + 1);
+    state.challenges.push({
+      id: Date.now(), name,
+      desc: document.getElementById('c-desc').value.trim(),
+      category: selectedCat, start, end,
+      points: parseInt(document.getElementById('c-points').value) || 10,
+      difficulty: document.getElementById('c-diff').value,
+      rules, totalDays, completedDays: []
+    });
+    saveState();
+    showNotif('Challenge create ho gaya! 🔥');
+    clearForm();
+    renderChallenges();
+    updateStats();
+    showTab('challenges', document.querySelectorAll('.tab')[0]);
+  }
+
+  function renderChallenges() {
+    const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+    const cat = document.getElementById('filter-cat')?.value || '';
+    const status = document.getElementById('filter-status')?.value || '';
+    let list = state.challenges.filter(c => {
+      if (search && !c.name.toLowerCase().includes(search) && !(c.desc||'').toLowerCase().includes(search)) return false;
+      if (cat && c.category !== cat) return false;
+      const pct = Math.round((c.completedDays.length / c.totalDays) * 100);
+      if (status === 'completed' && pct < 100) return false;
+      if (status === 'active' && pct >= 100) return false;
+      return true;
+    });
+    const el = document.getElementById('challenges-list');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚡</div><div style="font-size:16px;font-weight:600;">Koi challenge nahi mila</div><div style="font-size:13px;margin-top:4px;">Create tab mein jaake naya challenge banao!</div></div>';
+      return;
+    }
+    const dColor = { Easy: '#00d4aa', Medium: '#f8b400', Hard: '#ff4d6d', Extreme: '#ff006e' };
+    el.innerHTML = list.map(c => {
+      const pct = Math.min(100, Math.round((c.completedDays.length / c.totalDays) * 100));
+      const rulesHtml = c.rules.length ? '<ul class="rules-list">' + c.rules.map(r => '<li>' + r + '</li>').join('') + '</ul>' : '';
+      const acceptedList = (state.acceptedBy && state.acceptedBy[c.id]) || [];
+      const acceptCount = acceptedList.length;
+      const acceptLabel = acceptCount > 0 ? '✅ ' + acceptCount + ' Accepted' : '';
+      return '<div class="challenge-card"><div class="card-top"><div><div class="card-title">' + c.name + '</div><div style="display:flex;gap:8px;margin-top:4px;align-items:center;flex-wrap:wrap;"><span class="badge badge-' + c.category + '">' + c.category + '</span><span style="font-size:12px;color:' + (dColor[c.difficulty]||'var(--muted)') + ';font-weight:700;">' + c.difficulty + '</span>' + (acceptCount > 0 ? '<span style="font-size:11px;color:var(--accent3);font-weight:700;">' + acceptLabel + '</span>' : '') + '</div></div></div><div class="card-body">' + (c.desc ? '<div class="card-desc">' + c.desc + '</div>' : '') + rulesHtml + '<div class="progress-area"><div class="progress-label"><span>Progress</span><span>' + c.completedDays.length + '/' + c.totalDays + ' days (' + pct + '%)</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div></div><div class="card-meta"><span>📅 ' + c.start + ' → ' + c.end + '</span><span>⭐ ' + c.points + ' pts/day</span></div><div class="card-actions"><button class="btn btn-accept btn-sm" onclick="acceptChallenge(' + c.id + ')">⚡ Accept</button><button class="btn btn-success btn-sm" onclick="openTracking(' + c.id + ')">📊 Track</button>' + (isAdmin ? '<button class="btn btn-sm btn-outline" onclick="deleteChallenge(' + c.id + ')">🗑 Delete</button>' : '') + '</div></div></div>';
+    }).join('');
+  }
+
+  function acceptChallenge(id) {
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    const savedName = localStorage.getItem('cb_guest_name') || '';
+    document.getElementById('modal-area').innerHTML =
+      '<div class="modal-overlay" onclick="if(event.target===this)closeModal()">' +
+      '<div class="modal">' +
+      '<div class="modal-header"><div class="modal-title">⚡ Challenge Accept Karo</div><button class="close-btn" onclick="closeModal()">×</button></div>' +
+      '<div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:20px;">' +
+      '<div style="font-size:17px;font-weight:700;margin-bottom:4px;">' + c.name + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);">' + c.totalDays + ' days · ' + c.points + ' pts/day · ' + c.difficulty + '</div>' +
+      '</div>' +
+      '<div class="form-group" style="margin-bottom:8px;"><label>Tumhara Naam</label><input type="text" id="accept-name" placeholder="Apna naam likhein..." value="' + savedName + '" autofocus></div>' +
+      (savedName ? '<div style="font-size:12px;color:var(--accent3);margin-bottom:14px;">✅ Pehle se saved naam use ho raha hai</div>' : '<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Naam save ho jaayega — agle baar auto-fill hoga</div>') +
+      '<div style="display:flex;gap:10px;">' +
+      '<button class="btn btn-accept" style="flex:1;" onclick="confirmAccept(' + id + ')">🔥 Accept Challenge!</button>' +
+      '<button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>' +
+      '</div></div></div>';
+    setTimeout(() => { const el = document.getElementById('accept-name'); if(el) el.focus(); }, 100);
+  }
+
+  function confirmAccept(id) {
+    const name = (document.getElementById('accept-name')?.value || '').trim();
+    if (!name) { showNotif('Pehle apna naam likho!', true); return; }
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    localStorage.setItem('cb_guest_name', name);
+    const existing = state.participants.find(p => p.name.toLowerCase() === name.toLowerCase() && p.challengeId === id);
+    if (existing) { showNotif('✅ ' + name + ' pehle se join hai! Track karo!', false); closeModal(); return; }
+    state.participants.push({ id: Date.now(), name, challengeId: id, days: 0, streak: 0 });
+    if (!state.acceptedBy) state.acceptedBy = {};
+    if (!state.acceptedBy[id]) state.acceptedBy[id] = [];
+    if (!state.acceptedBy[id].includes(name)) state.acceptedBy[id].push(name);
+    saveState();
+    updateStats();
+    renderChallenges();
+    renderLB();
+    closeModal();
+    showNotif('🔥 ' + name + ' ne challenge accept kar liya!');
+  }
+
+  function openTracking(id) {
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    const days = [];
+    const start = new Date(c.start);
+    for (let i = 0; i < c.totalDays; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const pct = Math.min(100, Math.round((c.completedDays.length / c.totalDays) * 100));
+    const cells = days.map((d, i) => {
+      const done = c.completedDays.includes(d);
+      const past = d < today;
+      const cls = done ? 'done' : (past ? 'missed' : '');
+      return '<div class="day-cell ' + cls + '" onclick="toggleDay(' + id + ',\'' + d + '\')" title="' + d + '"><span style="font-size:9px;font-weight:700;">D' + (i + 1) + '</span><span style="font-size:9px;">' + (done ? '✓' : past ? '–' : '') + '</span></div>';
+    }).join('');
+    document.getElementById('modal-area').innerHTML =
+      '<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-header"><div class="modal-title">' + c.name + '</div><button class="close-btn" onclick="closeModal()">×</button></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;"><div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Done</div><div style="font-size:24px;font-weight:700;color:var(--accent3);">' + c.completedDays.length + '</div></div><div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Remaining</div><div style="font-size:24px;font-weight:700;color:var(--accent);">' + (c.totalDays - c.completedDays.length) + '</div></div><div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Score</div><div style="font-size:24px;font-weight:700;color:var(--accent2);">' + (c.completedDays.length * c.points) + '</div></div></div><div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Daily Tracker — Click to toggle</div><div class="day-grid">' + cells + '</div><div style="margin-top:16px;"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px;"><span>Overall Progress</span><span>' + pct + '%</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>' + (c.rules.length ? '<div style="margin-top:16px;"><div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Rules</div><ul class="rules-list">' + c.rules.map(r => '<li>' + r + '</li>').join('') + '</ul></div>' : '') + '</div></div>';
+  }
+
+  function toggleDay(id, date) {
+    const c = state.challenges.find(x => x.id === id);
+    if (!c) return;
+    const idx = c.completedDays.indexOf(date);
+    if (idx >= 0) c.completedDays.splice(idx, 1);
+    else c.completedDays.push(date);
+
+    const guestName = localStorage.getItem('cb_guest_name');
+    const userName = isAdmin ? 'Admin' : guestName;
+    if (userName) {
+      const participant = state.participants.find(p =>
+        p.name.toLowerCase() === userName.toLowerCase() && p.challengeId === id
+      );
+      if (participant) {
+        participant.days = c.completedDays.length;
+        participant.streak = c.completedDays.length;
+      }
+    }
+
+    saveState();
+    renderChallenges();
+    updateStats();
+    openTracking(id);
+  }
+
+  function deleteChallenge(id) {
+    if (!confirm('Challenge delete karna chahte ho?')) return;
+    state.challenges = state.challenges.filter(c => c.id !== id);
+    state.participants = state.participants.filter(p => p.challengeId !== id);
+    saveState();
+    renderChallenges();
+    renderLB();
+    updateStats();
+    showNotif('Challenge delete ho gaya');
+  }
+
+  function closeModal() { document.getElementById('modal-area').innerHTML = ''; }
+
+  function renderLB() {
+    const filter = document.getElementById('lb-challenge-filter').value;
+    const cSelect = document.getElementById('p-challenge');
+    const fSelect = document.getElementById('lb-challenge-filter');
+    const prevFilter = fSelect.value;
+    fSelect.innerHTML = '<option value="all">Sab Challenges</option>' + state.challenges.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
+    fSelect.value = prevFilter;
+    cSelect.innerHTML = state.challenges.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('') || '<option>Pehle challenge banao</option>';
+
+    let parts = state.participants;
+    if (filter && filter !== 'all') parts = parts.filter(p => p.challengeId == filter);
+    parts = parts.map(p => {
+      const c = state.challenges.find(x => x.id === p.challengeId);
+      return { ...p, score: p.days * (c ? c.points : 10), challengeName: c ? c.name : 'Unknown' };
+    }).sort((a, b) => b.score - a.score);
+
+    const body = document.getElementById('lb-body');
+    if (!parts.length) {
+      body.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><div style="font-size:16px;font-weight:600;">Koi participant nahi</div><div style="font-size:13px;margin-top:4px;">Niche participant add karein</div></div>';
+      return;
+    }
+    body.innerHTML = parts.map((p, i) => {
+      const rc = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : '';
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+      return '<div class="lb-row"><div class="rank ' + rc + '">' + (medal || (i+1)) + '</div><div><div class="lb-name">' + p.name + '</div><div class="lb-sub">' + p.challengeName + '</div></div><div class="lb-num" style="color:var(--accent3);">' + p.days + '</div><div class="lb-num" style="color:var(--accent2);">🔥' + (p.streak||0) + '</div><div class="lb-num" style="color:var(--accent);">' + p.score + '</div></div>';
+    }).join('');
+  }
+
+  function addParticipant() {
+    const name = document.getElementById('p-name').value.trim();
+    const cId = parseInt(document.getElementById('p-challenge').value);
+    const days = parseInt(document.getElementById('p-days').value) || 0;
+    const streak = parseInt(document.getElementById('p-streak').value) || 0;
+    if (!name) { showNotif('Naam zaroori hai!', true); return; }
+    const existing = state.participants.find(p => p.name.toLowerCase() === name.toLowerCase() && p.challengeId === cId);
+    if (existing) { existing.days = days; existing.streak = streak; }
+    else state.participants.push({ id: Date.now(), name, challengeId: cId, days, streak });
+    saveState();
+    document.getElementById('p-name').value = '';
+    document.getElementById('p-days').value = 0;
+    document.getElementById('p-streak').value = 0;
+    showNotif(name + ' leaderboard mein add ho gaya! 🏆');
+    renderLB();
+    updateStats();
+  }
+
+  function updateStats() {
+    document.getElementById('total-count').textContent = state.challenges.length;
+    document.getElementById('active-count').textContent = state.challenges.filter(c => c.completedDays.length < c.totalDays).length;
+    document.getElementById('part-count').textContent = state.participants.length;
+  }
+
+  function showNotif(msg, err = false) {
+    const n = document.getElementById('notif');
+    n.textContent = msg;
+    n.className = 'notification' + (err ? ' err' : '');
+    n.classList.add('show');
+    setTimeout(() => n.classList.remove('show'), 2500);
+  }
+
+  window.showTab = showTab;
+  window.selectCat = selectCat;
+  window.addRule = addRule;
+  window.delRule = delRule;
+  window.clearForm = clearForm;
+  window.createChallenge = createChallenge;
+  window.renderChallenges = renderChallenges;
+  window.acceptChallenge = acceptChallenge;
+  window.confirmAccept = confirmAccept;
+  window.openTracking = openTracking;
+  window.toggleDay = toggleDay;
+  window.deleteChallenge = deleteChallenge;
+  window.closeModal = closeModal;
+  window.renderLB = renderLB;
+  window.addParticipant = addParticipant;
+  window.updateStats = updateStats;
+  window.showNotif = showNotif;
+
+  // Init
+  const today = new Date().toISOString().slice(0, 10);
+  const end30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  document.getElementById('c-start').value = today;
+  document.getElementById('c-end').value = end30;
+
+  const savedGuestName = localStorage.getItem('cb_guest_name');
+  if (savedGuestName) {
+    const gInput = document.getElementById('guest-name-input');
+    if (gInput) gInput.value = savedGuestName;
+  }
+
+  showNotif('Data load ho raha hai... ⏳');
+  loadState().then(() => {
+    startRealtime();
+    if (sessionStorage.getItem('cb_admin') === '1') {
+      isAdmin = true;
+      hideLockScreen();
+      applyRole();
+    } else if (savedGuestName) {
+      hideLockScreen();
+      applyRole();
+    }
+    renderChallenges();
+    renderLB();
+    updateStats();
+  });
+</script>
+</body>
+</html>
